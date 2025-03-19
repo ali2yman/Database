@@ -35,21 +35,23 @@ db.sales.aggregate([
     
 //   3.Try Query 2 using Robo 3T using aggregate wizard and insert result
 //   into new collection named “newColl” 
-
-  db.createCollection("newColl")
-  db.newColl.insertMany([
-    {
-        "_id": "Widget",
-        "totalRevenue": NumberInt(560)
-    },
-    {
-        "_id": "Gadget",
-        "totalRevenue": NumberInt(150)
-    },
-    {
-        "_id": "Accessory",
-        "totalRevenue": NumberInt(150)
+db.sales.aggregate([
+  {
+    "$match": {
+      "date": {
+        "$gte": ISODate("2020-01-01"),
+        "$lte": ISODate("2023-01-01")
+      }
     }
+  },
+  {
+    "$group": {
+      "_id": "$product",
+      "totalRevenue": { "$sum": { "$multiply": ["$quantity", "$price"] } }
+    }
+  },
+  { "$sort": { "totalRevenue": -1 } },
+  { "$out": "newColl" }
 ])
 
 db.newColl.find({})
